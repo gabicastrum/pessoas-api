@@ -12,12 +12,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor //cria o construtor para injeção de automatica
-@AllArgsConstructor
 public class PessoaService {
     //pq private final?
     //pq o repository e o mapper
-    private PessoaRepository pessoaRepository;
-    private PessoaMapper pessoaMapper;
+    private final PessoaRepository pessoaRepository;
+    private final PessoaMapper pessoaMapper;
 
     //pq o uso de void?
     // pq RuntimeException e não outro?
