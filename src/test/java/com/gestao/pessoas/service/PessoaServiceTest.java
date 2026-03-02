@@ -7,7 +7,6 @@ import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.PessoaMapper;
 import com.gestao.pessoas.repository.PessoaRepository;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,15 +23,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PessoaServiceTest {
 
-    //injetando a classe service
     @InjectMocks
-    PessoaService service; // a classe
+    PessoaService service;
 
     @Mock
-    PessoaRepository repository; //simulando o banco de dados
+    PessoaRepository repository;
 
     @Mock
-    PessoaMapper mapper; //simulando o conversor
+    PessoaMapper mapper;
 
 
     @Test
@@ -66,6 +64,6 @@ public class PessoaServiceTest {
         when(repository.existsByCpf(dto.cpf())).thenReturn(Boolean.TRUE);
 
         Assertions.assertThrows(CpfExisteException.class, () -> service.cadastrarPessoa(dto));
-        verify(repository, never()).save(pessoaMock);
+        verify(repository, never()).save(any());
     }
 }
