@@ -2,6 +2,7 @@ package com.gestao.pessoas.service;
 
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.PessoaMapper;
 import com.gestao.pessoas.repository.PessoaRepository;
 import jakarta.transaction.Transactional;
@@ -23,7 +24,7 @@ public class PessoaService {
     @Transactional
     public void cadastrarPessoa(PessoaRequestDTO dto) {
         if (pessoaRepository.existsByCpf(dto.cpf())) {
-            throw new RuntimeException("CPF já cadastrado");
+            throw new CpfExisteException();
         }
 
         //convertendo DTO para a entidade
