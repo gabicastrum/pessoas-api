@@ -3,6 +3,7 @@ package com.gestao.pessoas.service;
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.PessoaMapper;
 import com.gestao.pessoas.repository.PessoaRepository;
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +38,6 @@ public class PessoaServiceTest {
     @Test
     @DisplayName("Deve cadastrar uma pessoa com sucesso")
     void deveCadastrarPessoaComSucesso(){
-        //Dado que temos:
         EnderecoRequestDTO enderecoDTO = new EnderecoRequestDTO("Minha rua", "11A", "Meu bairro", "São Paulo", "SP","1111111");
         PessoaRequestDTO dto = new PessoaRequestDTO("Gabriela", LocalDate.of(2010, 10, 21), "111111111", List.of(enderecoDTO));
 
@@ -65,7 +65,7 @@ public class PessoaServiceTest {
 
         when(repository.existsByCpf(dto.cpf())).thenReturn(Boolean.TRUE);
 
-        Assertions.assertThrows(RuntimeException.class, () -> service.cadastrarPessoa(dto));
+        Assertions.assertThrows(CpfExisteException.class, () -> service.cadastrarPessoa(dto));
         verify(repository, never()).save(pessoaMock);
     }
 }
