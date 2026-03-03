@@ -4,6 +4,7 @@ import com.gestao.pessoas.domain.Endereco;
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -67,6 +68,16 @@ public class PessoaTestBuilder {
                 LocalDate.of(2000, 1, 10),
                 "111.222.333-00",
                 List.of(enderecoPrincipal(), segundoPrincipal));
+    }
+
+    //PessoaResponseDTO
+    public static PessoaResponseDTO pessoaResponseMock(Pessoa pessoa) {
+        return new PessoaResponseDTO(
+                1L,
+                pessoa.getNome(),
+                pessoa.getCpf(),
+                List.of()
+        );
     }
 
     //Pessoa (entidade mock)

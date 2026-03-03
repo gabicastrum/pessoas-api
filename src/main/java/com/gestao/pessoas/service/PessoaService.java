@@ -4,6 +4,7 @@ import com.gestao.pessoas.domain.Endereco;
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.EnderecoMapper;
 import com.gestao.pessoas.mapper.PessoaMapper;
@@ -57,6 +58,13 @@ public class PessoaService {
         pessoa.getEnderecos().add(endereco);
 
         pessoaRepository.save(pessoa);
+    }
+
+    public List<PessoaResponseDTO> listarPessoas() {
+        return pessoaRepository.findAll()
+                .stream()
+                .map(pessoaMapper::toDTO)
+                .toList();
     }
 
     private void validarApenaUmPrincipal(List<Endereco> enderecos) {

@@ -3,6 +3,7 @@ package com.gestao.pessoas.service;
 import com.gestao.pessoas.domain.Endereco;
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.PessoaMapper;
 import com.gestao.pessoas.repository.PessoaRepository;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.gestao.pessoas.builder.PessoaTestBuilder.*;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -101,5 +103,27 @@ public class PessoaServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.cadastrarPessoa(dto));
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve retornar uma lista de pessoas e seus endereços")
+    void deveRetornarTodasPessoas() {
+        PessoaRequestDTO dto = pessoaComTresEnderecos();
+        Pessoa pessoaMock = pessoaMock(dto);
+        PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
+
+        when(repository.findAll()).thenReturn(List.of(pessoaMock));
+        when(mapper.toDTO(pessoaMock)).thenReturn(responseMock);
+
+        List<PessoaResponseDTO> resultado = service.listarPessoas();
+
+        assertThat(resultado)
+                .hasSize(1)
+                .first()
+                .extracting(PessoaResponseDTO::nome)
+                .isEqualTo(pessoaMock.getNome());
+
+        verify(repository).findAll();
+        verify(mapper).toDTO(pessoaMock);
     }
 }
