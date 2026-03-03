@@ -3,7 +3,9 @@ package com.gestao.pessoas.service;
 import com.gestao.pessoas.domain.Endereco;
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
+import com.gestao.pessoas.dto.request.EnderecoUpdateRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.dto.request.PessoaUpdateRequestDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.EnderecoMapper;
@@ -178,6 +180,86 @@ public class PessoaServiceTest {
 
             assertThrows(EntityNotFoundException.class,
                     () -> service.adicionarEndereco(1L, dto));
+            verify(repository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("buscarPessoa")
+    class BuscarPessoa {
+
+        @Test
+        @DisplayName("Deve buscar uma pessoa com sucesso")
+        void deveBuscarPessoaComSucesso() {
+            Pessoa pessoaMock = pessoaMockComUmPrincipal();
+            PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
+
+            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(mapper.toDTO(pessoaMock)).thenReturn(responseMock);
+
+            PessoaResponseDTO resultado = service.buscarPessoa(1L);
+
+            assertThat(resultado.nome()).isEqualTo(pessoaMock.getNome());
+            verify(repository).findById(1L);
+            verify(mapper).toDTO(pessoaMock);
+        }
+
+        @Test
+        @DisplayName("Não deve buscar pessoa se não encontrada")
+        void naoDeveBuscarPessoaNaoEncontrada() {
+            when(repository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(EntityNotFoundException.class,
+                    () -> service.buscarPessoa(99L));
+            verify(mapper, never()).toDTO(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("atualizarDados")
+    class AtualizarDados {
+
+        @Test
+        @DisplayName("Deve atualizar dados da pessoa com sucesso")
+        void deveAtualizarDadosPessoaComSucesso() {
+            Pessoa pessoaMock = pessoaMockComUmPrincipal();
+            PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO("Gabriela Atualizada", null, null);
+            PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
+
+            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(repository.save(pessoaMock)).thenReturn(pessoaMock);
+            when(mapper.toDTO(pessoaMock)).thenReturn(responseMock);
+
+            PessoaResponseDTO resultado = service.atualizarDados(1L, updateDTO);
+
+            assertThat(resultado).isNotNull();
+            assertThat(pessoaMock.getNome()).isEqualTo("Gabriela Atualizada");
+            verify(repository).save(pessoaMock);
+        }
+
+        @Test
+        @DisplayName("Não deve atualizar se pessoa não encontrada")
+        void naoDeveAtualizarSePessoaNaoEncontrada() {
+            PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO("Gabriela Atualizada", null, null);
+
+            when(repository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(EntityNotFoundException.class,
+                    () -> service.atualizarDados(99L, updateDTO));
+            verify(repository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Não deve atualizar se endereço não encontrado")
+        void naoDeveAtualizarSeEnderecoNaoEncontrado() {
+            Pessoa pessoaMock = pessoaMockComUmPrincipal();
+            EnderecoUpdateRequestDTO enderecoDTO = new EnderecoUpdateRequestDTO(999L, "Rua Nova", null, null, null, null, null, null);
+            PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO(null, null, List.of(enderecoDTO));
+
+            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+
+            assertThrows(EntityNotFoundException.class,
+                    () -> service.atualizarDados(1L, updateDTO));
             verify(repository, never()).save(any());
         }
     }
