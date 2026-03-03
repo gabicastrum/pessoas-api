@@ -38,7 +38,8 @@ public class PessoaService {
 
         if (pessoa.getEnderecos() != null) {
             validarApenaUmPrincipal(pessoa.getEnderecos());
-            pessoa.getEnderecos().forEach(endereco->
+            validarPeloMenosUmPrincipal(pessoa.getEnderecos());
+            pessoa.getEnderecos().forEach(endereco ->
                     endereco.setPessoa(pessoa));
         }
         pessoaRepository.save(pessoa);
@@ -61,6 +62,7 @@ public class PessoaService {
         endereco.setPessoa(pessoa);
         pessoa.getEnderecos().add(endereco);
 
+        validarPeloMenosUmPrincipal(pessoa.getEnderecos());
         pessoaRepository.save(pessoa);
     }
 
@@ -87,7 +89,7 @@ public class PessoaService {
 
     private Pessoa buscarPessoaPorId(Long id) {
         return pessoaRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
     }
 
     private void atualizarDadosPessoa(Pessoa pessoa, PessoaUpdateRequestDTO dto) {
@@ -121,6 +123,7 @@ public class PessoaService {
             pessoa.getEnderecos().forEach(e -> e.setIsPrincipal(false));
         }
         endereco.setIsPrincipal(isPrincipal);
+        validarPeloMenosUmPrincipal(pessoa.getEnderecos());
     }
 
     private void validarApenaUmPrincipal(List<Endereco> enderecos) {
@@ -129,6 +132,14 @@ public class PessoaService {
                 .count();
         if (count > 1) {
             throw new IllegalArgumentException("Apenas um endereço pode ser principal");
+        }
+    }
+
+    private void validarPeloMenosUmPrincipal(List<Endereco> enderecos) {
+        boolean temPrincipal = enderecos.stream()
+                .anyMatch(e -> Boolean.TRUE.equals(e.getIsPrincipal()));
+        if (!temPrincipal) {
+            throw new IllegalArgumentException("É necessário ter ao menos um endereço principal");
         }
     }
 }
