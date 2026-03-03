@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.Parameters;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -40,14 +42,12 @@ public class PessoaController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Parameters({
-            @Parameter(name = "page", description = "Número da página", example = "0"),
-            @Parameter(name = "size", description = "Itens por página", example = "10"),
-            @Parameter(name = "sort", description = "Ordenação (ex: nome,asc)", example = "nome,asc")
-    })
     public Page<PessoaResponseDTO> listarPessoas(
-            @PageableDefault(size = 10, sort = "nome") Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nome") String sort
     ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
         return service.listarPessoas(pageable);
     }
 }
