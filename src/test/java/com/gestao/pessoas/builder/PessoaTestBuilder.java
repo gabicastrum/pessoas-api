@@ -83,9 +83,10 @@ public class PessoaTestBuilder {
     //Pessoa (entidade mock)
 
     public static Pessoa pessoaMock(PessoaRequestDTO dto) {
+        Endereco principal = Endereco.builder().isPrincipal(true).build();
         return Pessoa.builder()
                 .nome(dto.nome())
-                .enderecos(new ArrayList<>())
+                .enderecos(new ArrayList<>(List.of(principal)))
                 .build();
     }
 
