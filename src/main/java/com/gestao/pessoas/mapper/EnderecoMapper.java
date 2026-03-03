@@ -11,4 +11,6 @@ public interface EnderecoMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "pessoa", ignore = true)
     Endereco toEntity(EnderecoRequestDTO dto);
+
+    EnderecoRequestDTO toDto(Endereco endereco);
 }
