@@ -3,6 +3,7 @@ package com.gestao.pessoas.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,5 +19,18 @@ public class SwaggerConfig {
                         .version("v1.0.0")
                         .contact(new Contact()
                                 .name("Gabriela de Castro Laurindo")));
+    }
+
+    @Bean
+    public OpenApiCustomizer removePageableParam() {
+        return openApi -> openApi.getPaths().values().forEach(pathItem ->
+                pathItem.readOperations().forEach(operation -> {
+                    if (operation.getParameters() != null) {
+                        operation.getParameters().removeIf(param ->
+                                "pageable".equals(param.getName())
+                        );
+                    }
+                })
+        );
     }
 }

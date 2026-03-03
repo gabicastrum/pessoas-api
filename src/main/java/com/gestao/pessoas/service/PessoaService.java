@@ -12,6 +12,8 @@ import com.gestao.pessoas.repository.PessoaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -60,11 +62,9 @@ public class PessoaService {
         pessoaRepository.save(pessoa);
     }
 
-    public List<PessoaResponseDTO> listarPessoas() {
-        return pessoaRepository.findAll()
-                .stream()
-                .map(pessoaMapper::toDTO)
-                .toList();
+    public Page<PessoaResponseDTO> listarPessoas(Pageable pageable) {
+        return pessoaRepository.findAll(pageable)
+                .map(pessoaMapper::toDTO);
     }
 
     private void validarApenaUmPrincipal(List<Endereco> enderecos) {

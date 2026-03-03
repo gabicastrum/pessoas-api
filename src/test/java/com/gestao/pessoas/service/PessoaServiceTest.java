@@ -13,6 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,22 +112,24 @@ public class PessoaServiceTest {
     @Test
     @DisplayName("Deve retornar uma lista de pessoas e seus endereços")
     void deveRetornarTodasPessoas() {
-        PessoaRequestDTO dto = pessoaComTresEnderecos();
-        Pessoa pessoaMock = pessoaMock(dto);
+        Pageable pageable = PageRequest.of(0, 10);
+        Pessoa pessoaMock = pessoaMock(pessoaComTresEnderecos());
         PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
 
-        when(repository.findAll()).thenReturn(List.of(pessoaMock));
+        Page<Pessoa> paginaMock = new PageImpl<>(List.of(pessoaMock));
+
+        when(repository.findAll(pageable)).thenReturn(paginaMock);
         when(mapper.toDTO(pessoaMock)).thenReturn(responseMock);
 
-        List<PessoaResponseDTO> resultado = service.listarPessoas();
+        Page<PessoaResponseDTO> resultado = service.listarPessoas(pageable);
 
-        assertThat(resultado)
+        assertThat(resultado.getContent())
                 .hasSize(1)
                 .first()
                 .extracting(PessoaResponseDTO::nome)
                 .isEqualTo(pessoaMock.getNome());
 
-        verify(repository).findAll();
+        verify(repository).findAll(pageable);
         verify(mapper).toDTO(pessoaMock);
     }
 }
