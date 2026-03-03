@@ -6,6 +6,7 @@ public record EnderecoRequestDTO(
         String bairro,
         String cidade,
         String estado,
-        String cep
+        String cep,
+        Boolean isPrincipal
 ) {
 }
