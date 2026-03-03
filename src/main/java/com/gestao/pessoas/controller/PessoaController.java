@@ -5,8 +5,13 @@ import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.service.PessoaService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +40,14 @@ public class PessoaController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<PessoaResponseDTO> listarPessoas() {
-        return service.listarPessoas();
+    @Parameters({
+            @Parameter(name = "page", description = "Número da página", example = "0"),
+            @Parameter(name = "size", description = "Itens por página", example = "10"),
+            @Parameter(name = "sort", description = "Ordenação (ex: nome,asc)", example = "nome,asc")
+    })
+    public Page<PessoaResponseDTO> listarPessoas(
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable
+    ) {
+        return service.listarPessoas(pageable);
     }
 }
