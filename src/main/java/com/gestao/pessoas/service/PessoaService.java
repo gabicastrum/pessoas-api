@@ -67,6 +67,12 @@ public class PessoaService {
                 .map(pessoaMapper::toDTO);
     }
 
+    public PessoaResponseDTO buscarPessoaPorId(Long id) {
+        Pessoa pessoa = pessoaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
+        return pessoaMapper.toDTO(pessoa);
+    }
+
     private void validarApenaUmPrincipal(List<Endereco> enderecos) {
         long count = enderecos.stream()
                 .filter(e -> Boolean.TRUE.equals(e.getIsPrincipal()))

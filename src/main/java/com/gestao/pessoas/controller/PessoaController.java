@@ -50,4 +50,12 @@ public class PessoaController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
         return service.listarPessoas(pageable);
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public PessoaResponseDTO buscarPessoa(
+            @PathVariable Long id
+    ) {
+        return service.buscarPessoaPorId(id);
+    }
 }
