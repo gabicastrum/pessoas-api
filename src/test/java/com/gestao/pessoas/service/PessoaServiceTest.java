@@ -2,11 +2,14 @@ package com.gestao.pessoas.service;
 
 import com.gestao.pessoas.domain.Endereco;
 import com.gestao.pessoas.domain.Pessoa;
+import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
+import com.gestao.pessoas.mapper.EnderecoMapper;
 import com.gestao.pessoas.mapper.PessoaMapper;
 import com.gestao.pessoas.repository.PessoaRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.gestao.pessoas.builder.PessoaTestBuilder.*;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -38,6 +42,9 @@ public class PessoaServiceTest {
 
     @Mock
     PessoaMapper mapper;
+
+    @Mock
+    EnderecoMapper enderecoMapper;
 
     @Nested
     @DisplayName("cadastrarPessoa")
@@ -116,7 +123,7 @@ public class PessoaServiceTest {
 
     @Nested
     @DisplayName("listarPessoas")
-    class listarPessoas {
+    class ListarPessoas {
         @Test
         @DisplayName("Deve retornar uma lista de pessoas e seus endereços")
         void deveRetornarTodasPessoas() {
@@ -139,6 +146,39 @@ public class PessoaServiceTest {
 
             verify(repository).findAll(pageable);
             verify(mapper).toDTO(pessoaMock);
+        }
+    }
+
+    @Nested
+    @DisplayName("adicionarEndereco")
+    class AdicionarEndereco {
+
+        @Test
+        @DisplayName("Deve adicionar um endereco novo a uma pessoa")
+        void deveAdicionarEnderecoNovoAUmaPessoa() {
+            Pessoa pessoaMock = pessoaMockComUmPrincipal();
+            EnderecoRequestDTO dto = enderecoSecundario();
+            Endereco enderecoMock = Endereco.builder().isPrincipal(false).build();
+
+            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(enderecoMapper.toEntity(dto)).thenReturn(enderecoMock);
+
+            service.adicionarEndereco(1L, dto);
+
+            verify(repository).save(pessoaMock);
+            assertThat(pessoaMock.getEnderecos()).contains(enderecoMock);
+        }
+
+        @Test
+        @DisplayName("Não deve adicionar endereco se pessoa não encontrada")
+        void naoDeveAdicionarEnderecoSePessoaNaoEncontrada() {
+            EnderecoRequestDTO dto = enderecoSecundario();
+
+            when(repository.findById(1L)).thenReturn(Optional.empty());
+
+            assertThrows(EntityNotFoundException.class,
+                    () -> service.adicionarEndereco(1L, dto));
+            verify(repository, never()).save(any());
         }
     }
 }
