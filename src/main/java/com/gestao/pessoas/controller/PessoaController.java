@@ -3,6 +3,7 @@ package com.gestao.pessoas.controller;
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.dto.request.PessoaUpdateRequestDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.service.PessoaService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -56,6 +57,15 @@ public class PessoaController {
     public PessoaResponseDTO buscarPessoa(
             @PathVariable Long id
     ) {
-        return service.buscarPessoaPorId(id);
+        return service.buscarPessoa(id);
+    }
+
+    @PatchMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public PessoaResponseDTO atualizarPessoa(
+            @PathVariable Long id,
+            @RequestBody @Valid PessoaUpdateRequestDTO dto
+    ) {
+        return service.atualizarDados(id, dto);
     }
 }
