@@ -61,7 +61,7 @@ public class PessoaController {
     }
 
     @PatchMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public PessoaResponseDTO atualizarPessoa(
             @PathVariable Long id,
             @RequestBody @Valid PessoaUpdateRequestDTO dto
