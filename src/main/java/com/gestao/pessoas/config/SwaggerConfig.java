@@ -20,17 +20,4 @@ public class SwaggerConfig {
                         .contact(new Contact()
                                 .name("Gabriela de Castro Laurindo")));
     }
-
-    @Bean
-    public OpenApiCustomizer removePageableParam() {
-        return openApi -> openApi.getPaths().values().forEach(pathItem ->
-                pathItem.readOperations().forEach(operation -> {
-                    if (operation.getParameters() != null) {
-                        operation.getParameters().removeIf(param ->
-                                "pageable".equals(param.getName())
-                        );
-                    }
-                })
-        );
-    }
 }
