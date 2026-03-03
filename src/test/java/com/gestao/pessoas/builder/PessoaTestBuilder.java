@@ -91,7 +91,10 @@ public class PessoaTestBuilder {
     }
 
     public static Pessoa pessoaMockComUmPrincipal() {
-        Endereco principal = Endereco.builder().isPrincipal(true).build();
+        Endereco principal = Endereco.builder()
+                .idEndereco(1L)
+                .isPrincipal(true)
+                .build();
         return Pessoa.builder()
                 .nome("Gabriela")
                 .enderecos(new ArrayList<>(List.of(principal)))
