@@ -86,6 +86,7 @@ public class PessoaService {
         return pessoaMapper.toDTO(pessoaRepository.save(pessoa));
     }
 
+    @Transactional
     public void deletarPessoa(Long id) {
         buscarPessoaPorId(id);
         pessoaRepository.deleteById(id);

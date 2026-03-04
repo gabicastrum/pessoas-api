@@ -40,10 +40,10 @@ public class PessoaServiceTest {
     PessoaService service;
 
     @Mock
-    PessoaRepository repository;
+    PessoaRepository pessoaRepository;
 
     @Mock
-    PessoaMapper mapper;
+    PessoaMapper pessoaMapper;
 
     @Mock
     EnderecoMapper enderecoMapper;
@@ -58,12 +58,12 @@ public class PessoaServiceTest {
             PessoaRequestDTO dto = pessoaComUmEndereco();
             Pessoa pessoaMock = pessoaMock(dto);
 
-            when(repository.existsByCpf(dto.cpf())).thenReturn(false);
-            when(mapper.toEntity(dto)).thenReturn(pessoaMock);
+            when(pessoaRepository.existsByCpf(dto.cpf())).thenReturn(false);
+            when(pessoaMapper.toEntity(dto)).thenReturn(pessoaMock);
 
             service.cadastrarPessoa(dto);
 
-            verify(repository).save(pessoaMock);
+            verify(pessoaRepository).save(pessoaMock);
         }
 
         @Test
@@ -71,10 +71,10 @@ public class PessoaServiceTest {
         void nãoDeveCadastrarPessoaComCpfExistente(){
             PessoaRequestDTO dto = pessoaComUmEndereco();
 
-            when(repository.existsByCpf(dto.cpf())).thenReturn(true);
+            when(pessoaRepository.existsByCpf(dto.cpf())).thenReturn(true);
 
             assertThrows(CpfExisteException.class, () -> service.cadastrarPessoa(dto));
-            verify(repository, never()).save(any());
+            verify(pessoaRepository, never()).save(any());
         }
 
         @Test
@@ -83,12 +83,12 @@ public class PessoaServiceTest {
             PessoaRequestDTO dto = pessoaComTresEnderecos();
             Pessoa pessoaMock = pessoaMock(dto);
 
-            when(repository.existsByCpf(dto.cpf())).thenReturn(false);
-            when(mapper.toEntity(dto)).thenReturn(pessoaMock);
+            when(pessoaRepository.existsByCpf(dto.cpf())).thenReturn(false);
+            when(pessoaMapper.toEntity(dto)).thenReturn(pessoaMock);
 
             service.cadastrarPessoa(dto);
 
-            verify(repository).save(pessoaMock);
+            verify(pessoaRepository).save(pessoaMock);
         }
 
         @Test
@@ -97,12 +97,12 @@ public class PessoaServiceTest {
             PessoaRequestDTO dto = pessoaSemEnderecos();
             Pessoa pessoaMock = pessoaMock(dto);
 
-            when(repository.existsByCpf(dto.cpf())).thenReturn(false);
-            when(mapper.toEntity(dto)).thenReturn(pessoaMock);
+            when(pessoaRepository.existsByCpf(dto.cpf())).thenReturn(false);
+            when(pessoaMapper.toEntity(dto)).thenReturn(pessoaMock);
 
             service.cadastrarPessoa(dto);
 
-            verify(repository).save(pessoaMock);
+            verify(pessoaRepository).save(pessoaMock);
         }
 
         @Test
@@ -115,11 +115,11 @@ public class PessoaServiceTest {
             Endereco e2 = new Endereco(); e2.setIsPrincipal(true);
             pessoaMock.setEnderecos(new ArrayList<>(List.of(e1, e2)));
 
-            when(repository.existsByCpf(dto.cpf())).thenReturn(false);
-            when(mapper.toEntity(dto)).thenReturn(pessoaMock);
+            when(pessoaRepository.existsByCpf(dto.cpf())).thenReturn(false);
+            when(pessoaMapper.toEntity(dto)).thenReturn(pessoaMock);
 
             assertThrows(IllegalArgumentException.class, () -> service.cadastrarPessoa(dto));
-            verify(repository, never()).save(any());
+            verify(pessoaRepository, never()).save(any());
         }
     }
 
@@ -135,8 +135,8 @@ public class PessoaServiceTest {
 
             Page<Pessoa> paginaMock = new PageImpl<>(List.of(pessoaMock));
 
-            when(repository.findAll(pageable)).thenReturn(paginaMock);
-            when(mapper.toDTO(pessoaMock)).thenReturn(responseMock);
+            when(pessoaRepository.findAll(pageable)).thenReturn(paginaMock);
+            when(pessoaMapper.toDTO(pessoaMock)).thenReturn(responseMock);
 
             Page<PessoaResponseDTO> resultado = service.listarPessoas(pageable);
 
@@ -146,8 +146,8 @@ public class PessoaServiceTest {
                     .extracting(PessoaResponseDTO::nome)
                     .isEqualTo(pessoaMock.getNome());
 
-            verify(repository).findAll(pageable);
-            verify(mapper).toDTO(pessoaMock);
+            verify(pessoaRepository).findAll(pageable);
+            verify(pessoaMapper).toDTO(pessoaMock);
         }
     }
 
@@ -162,12 +162,12 @@ public class PessoaServiceTest {
             EnderecoRequestDTO dto = enderecoSecundario();
             Endereco enderecoMock = Endereco.builder().isPrincipal(false).build();
 
-            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
             when(enderecoMapper.toEntity(dto)).thenReturn(enderecoMock);
 
             service.adicionarEndereco(1L, dto);
 
-            verify(repository).save(pessoaMock);
+            verify(pessoaRepository).save(pessoaMock);
             assertThat(pessoaMock.getEnderecos()).contains(enderecoMock);
         }
 
@@ -176,11 +176,11 @@ public class PessoaServiceTest {
         void naoDeveAdicionarEnderecoSePessoaNaoEncontrada() {
             EnderecoRequestDTO dto = enderecoSecundario();
 
-            when(repository.findById(1L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findById(1L)).thenReturn(Optional.empty());
 
             assertThrows(EntityNotFoundException.class,
                     () -> service.adicionarEndereco(1L, dto));
-            verify(repository, never()).save(any());
+            verify(pessoaRepository, never()).save(any());
         }
     }
 
@@ -194,24 +194,24 @@ public class PessoaServiceTest {
             Pessoa pessoaMock = pessoaMockComUmPrincipal();
             PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
 
-            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
-            when(mapper.toDTO(pessoaMock)).thenReturn(responseMock);
+            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaMapper.toDTO(pessoaMock)).thenReturn(responseMock);
 
             PessoaResponseDTO resultado = service.buscarPessoa(1L);
 
             assertThat(resultado.nome()).isEqualTo(pessoaMock.getNome());
-            verify(repository).findById(1L);
-            verify(mapper).toDTO(pessoaMock);
+            verify(pessoaRepository).findById(1L);
+            verify(pessoaMapper).toDTO(pessoaMock);
         }
 
         @Test
         @DisplayName("Não deve buscar pessoa se não encontrada")
         void naoDeveBuscarPessoaNaoEncontrada() {
-            when(repository.findById(99L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findById(99L)).thenReturn(Optional.empty());
 
             assertThrows(EntityNotFoundException.class,
                     () -> service.buscarPessoa(99L));
-            verify(mapper, never()).toDTO(any());
+            verify(pessoaMapper, never()).toDTO(any());
         }
     }
 
@@ -226,15 +226,15 @@ public class PessoaServiceTest {
             PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO("Gabriela Atualizada", null, null);
             PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
 
-            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
-            when(repository.save(pessoaMock)).thenReturn(pessoaMock);
-            when(mapper.toDTO(pessoaMock)).thenReturn(responseMock);
+            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.save(pessoaMock)).thenReturn(pessoaMock);
+            when(pessoaMapper.toDTO(pessoaMock)).thenReturn(responseMock);
 
             PessoaResponseDTO resultado = service.atualizarDados(1L, updateDTO);
 
             assertThat(resultado).isNotNull();
             assertThat(pessoaMock.getNome()).isEqualTo("Gabriela Atualizada");
-            verify(repository).save(pessoaMock);
+            verify(pessoaRepository).save(pessoaMock);
         }
 
         @Test
@@ -242,11 +242,11 @@ public class PessoaServiceTest {
         void naoDeveAtualizarSePessoaNaoEncontrada() {
             PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO("Gabriela Atualizada", null, null);
 
-            when(repository.findById(99L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findById(99L)).thenReturn(Optional.empty());
 
             assertThrows(EntityNotFoundException.class,
                     () -> service.atualizarDados(99L, updateDTO));
-            verify(repository, never()).save(any());
+            verify(pessoaRepository, never()).save(any());
         }
 
         @Test
@@ -256,11 +256,38 @@ public class PessoaServiceTest {
             EnderecoUpdateRequestDTO enderecoDTO = new EnderecoUpdateRequestDTO(999L, "Rua Nova", null, null, null, null, null, null);
             PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO(null, null, List.of(enderecoDTO));
 
-            when(repository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
 
             assertThrows(EntityNotFoundException.class,
                     () -> service.atualizarDados(1L, updateDTO));
-            verify(repository, never()).save(any());
+            verify(pessoaRepository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("deletarPessoa")
+    class DeletarPessoa {
+
+        @Test
+        @DisplayName(" Deve deletar os dados da pessoa com sucesso")
+        void deveDeletarPessoaComSucesso() {
+            Pessoa pessoaMock = pessoaMockComUmPrincipal();
+
+            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+
+            service.deletarPessoa(1L);
+
+            verify(pessoaRepository).deleteById(1L);
+        }
+
+        @Test
+        @DisplayName("Não deve deletar se os dados não forem encontrados")
+        void naoDeveDeletarSeOsDadosNaoForemEncontrados() {
+            when(pessoaRepository.findById(99L)).thenReturn(Optional.empty());
+
+            assertThrows(EntityNotFoundException.class, () -> service.deletarPessoa(99L));
+
+            verify(pessoaRepository, never()).deleteById(any());
         }
     }
 }

@@ -96,6 +96,7 @@ public class PessoaTestBuilder {
                 .isPrincipal(true)
                 .build();
         return Pessoa.builder()
+                .id(1L)
                 .nome("Gabriela")
                 .enderecos(new ArrayList<>(List.of(principal)))
                 .build();
