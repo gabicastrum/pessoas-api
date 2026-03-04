@@ -6,6 +6,7 @@ import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.EnderecoUpdateRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaUpdateRequestDTO;
+import com.gestao.pessoas.dto.response.EnderecoResultadoDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.EnderecoMapper;
@@ -37,33 +38,24 @@ public class PessoaService {
         Pessoa pessoa = pessoaMapper.toEntity(dto);
 
         if (pessoa.getEnderecos() != null) {
-            validarApenaUmPrincipal(pessoa.getEnderecos());
-            validarPeloMenosUmPrincipal(pessoa.getEnderecos());
             pessoa.getEnderecos().forEach(endereco ->
                     endereco.setPessoa(pessoa));
+            validarConsistenciaEnderecos(pessoa);
         }
         pessoaRepository.save(pessoa);
     }
 
     @Transactional
-    public void adicionarEndereco(Long idPessoa, EnderecoRequestDTO dto) {
-        Pessoa pessoa = pessoaRepository.findById(idPessoa).orElseThrow(
-                () -> new EntityNotFoundException("Pessoa não encontrada"));
+    public List<EnderecoResultadoDTO> adicionarEndereco(Long idPessoa, List<EnderecoRequestDTO> dtos) {
+        Pessoa pessoa = buscarPessoaComEnderecos(idPessoa);
 
-        if (pessoa.getEnderecos() == null) {
-            pessoa.setEnderecos(new ArrayList<>());
-        }
+        List<EnderecoResultadoDTO> resultados = new ArrayList<>();
 
-        if (Boolean.TRUE.equals(dto.isPrincipal())) {
-            pessoa.getEnderecos().forEach(e -> e.setIsPrincipal(false));
-        }
+        dtos.forEach(dto -> resultados.add(processarEndereco(pessoa, dto)));
 
-        Endereco endereco = enderecoMapper.toEntity(dto);
-        endereco.setPessoa(pessoa);
-        pessoa.getEnderecos().add(endereco);
-
-        validarPeloMenosUmPrincipal(pessoa.getEnderecos());
         pessoaRepository.save(pessoa);
+
+        return resultados;
     }
 
     public Page<PessoaResponseDTO> listarPessoas(Pageable pageable) {
@@ -83,6 +75,9 @@ public class PessoaService {
             dto.enderecos().forEach(enderecoDTO ->
                     atualizarEnderecoPessoa(pessoa, enderecoDTO));
         }
+
+        validarConsistenciaEnderecos(pessoa);
+
         return pessoaMapper.toDTO(pessoaRepository.save(pessoa));
     }
 
@@ -91,7 +86,6 @@ public class PessoaService {
         buscarPessoaPorId(id);
         pessoaRepository.deleteById(id);
     }
-
 
     private Pessoa buscarPessoaPorId(Long id) {
         return pessoaRepository.findById(id)
@@ -113,22 +107,53 @@ public class PessoaService {
         if (enderecoDTO.isPrincipal() != null) {
             atualizarPrincipal(pessoa, endereco, enderecoDTO.isPrincipal());
         }
-
     }
 
     private Endereco buscarEnderecoDaPessoa(Pessoa pessoa, Long idEndereco) {
         return pessoa.getEnderecos().stream()
                 .filter(e -> e.getIdEndereco().equals(idEndereco))
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Endereço não encontrado: " + idEndereco));
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Endereço não encontrado: " + idEndereco));
     }
 
     private void atualizarPrincipal(Pessoa pessoa, Endereco endereco, Boolean isPrincipal) {
         if (Boolean.TRUE.equals(isPrincipal)) {
             pessoa.getEnderecos().forEach(e -> e.setIsPrincipal(false));
         }
+
         endereco.setIsPrincipal(isPrincipal);
+    }
+
+    private EnderecoResultadoDTO processarEndereco(Pessoa pessoa, EnderecoRequestDTO dto) {
+        Endereco endereco = enderecoMapper.toEntity(dto);
+        endereco.setPessoa(pessoa);
+
+        try {
+            pessoa.getEnderecos().add(endereco);
+            validarConsistenciaEnderecos(pessoa);
+
+            return new EnderecoResultadoDTO( enderecoMapper.toDTO(endereco), true, "Salvo com sucesso");
+
+        } catch (IllegalArgumentException e) {
+            pessoa.getEnderecos().remove(endereco);
+
+            return new EnderecoResultadoDTO(enderecoMapper.toDTO(endereco), false, e.getMessage());
+        }
+    }
+
+    private Pessoa buscarPessoaComEnderecos(Long idPessoa) {
+        Pessoa pessoa = pessoaRepository.findByIdComEnderecos(idPessoa)
+                .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
+
+        if (pessoa.getEnderecos() == null) {
+            pessoa.setEnderecos(new ArrayList<>());
+        }
+
+        return pessoa;
+    }
+    private void validarConsistenciaEnderecos(Pessoa pessoa) {
+        validarApenaUmPrincipal(pessoa.getEnderecos());
         validarPeloMenosUmPrincipal(pessoa.getEnderecos());
     }
 
