@@ -29,6 +29,19 @@ public class PessoaService {
     private final PessoaMapper pessoaMapper;
     private final EnderecoMapper enderecoMapper;
 
+    /**
+     * Cadastra uma nova pessoa no sistema.
+     * <p>
+     * Regras:
+     * <ul>
+     *   <li>Não permite cadastro de pessoa com CPF já existente.</li>
+     *   <li>Valida que a lista de endereços, quando informada, tenha apenas um principal e pelo menos um principal.</li>
+     * </ul>
+     * @param dto Dados da pessoa a ser cadastrada
+     * @return Dados da pessoa cadastrada
+     * @throws CpfExisteException se o CPF já estiver cadastrado
+     * @throws IllegalArgumentException se a lista de endereços for inconsistente
+     */
     @Transactional
     public PessoaResponseDTO cadastrarPessoa(PessoaRequestDTO dto) {
         if (pessoaRepository.existsByCpf(dto.cpf())) {
@@ -47,6 +60,19 @@ public class PessoaService {
         return pessoaMapper.toDTO(pessoaSalva);
     }
 
+    /**
+     * Adiciona um ou mais endereços a uma pessoa existente.
+     * <p>
+     * Regras:
+     * <ul>
+     *   <li>Valida que a lista de endereços da pessoa tenha apenas um principal e pelo menos um principal.</li>
+     * </ul>
+     * @param idPessoa ID da pessoa
+     * @param dtos Lista de endereços a adicionar
+     * @return Lista de resultados do processamento de cada endereço
+     * @throws EntityNotFoundException se a pessoa não for encontrada
+     * @throws IllegalArgumentException se a lista de endereços ficar inconsistente
+     */
     @Transactional
     public List<EnderecoResultadoDTO> adicionarEndereco(Long idPessoa, List<EnderecoRequestDTO> dtos) {
         Pessoa pessoa = buscarPessoaComEnderecos(idPessoa);
@@ -60,15 +86,40 @@ public class PessoaService {
         return resultados;
     }
 
+    /**
+     * Lista todas as pessoas paginadas.
+     * @param pageable Parâmetros de paginação
+     * @return Página de pessoas
+     */
     public Page<PessoaResponseDTO> listarPessoas(Pageable pageable) {
         return pessoaRepository.findAll(pageable)
                 .map(pessoaMapper::toDTO);
     }
 
+    /**
+     * Busca uma pessoa pelo ID.
+     * @param id ID da pessoa
+     * @return Dados da pessoa
+     * @throws EntityNotFoundException se a pessoa não for encontrada
+     */
     public PessoaResponseDTO buscarPessoa(Long id) {
         return pessoaMapper.toDTO(buscarPessoaPorId(id));
     }
 
+    /**
+     * Atualiza os dados de uma pessoa existente.
+     * <p>
+     * Regras:
+     * <ul>
+     *   <li>Permite atualizar nome, data de nascimento e endereços.</li>
+     *   <li>Valida que a lista de endereços, se informada, tenha apenas um principal e pelo menos um principal.</li>
+     * </ul>
+     * @param id ID da pessoa
+     * @param dto Dados para atualização
+     * @return Dados da pessoa atualizada
+     * @throws EntityNotFoundException se a pessoa não for encontrada
+     * @throws IllegalArgumentException se a lista de endereços ficar inconsistente
+     */
     @Transactional
     public PessoaResponseDTO atualizarDados(Long id, PessoaUpdateRequestDTO dto) {
         Pessoa pessoa = buscarPessoaPorId(id);
@@ -83,6 +134,11 @@ public class PessoaService {
         return pessoaMapper.toDTO(pessoaRepository.save(pessoa));
     }
 
+    /**
+     * Remove uma pessoa do sistema.
+     * @param id ID da pessoa
+     * @throws EntityNotFoundException se a pessoa não for encontrada
+     */
     @Transactional
     public void deletarPessoa(Long id) {
         buscarPessoaPorId(id);
