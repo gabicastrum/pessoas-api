@@ -6,6 +6,7 @@ import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.EnderecoUpdateRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaUpdateRequestDTO;
+import com.gestao.pessoas.dto.response.EnderecoResultadoDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.EnderecoMapper;
@@ -156,30 +157,48 @@ public class PessoaServiceTest {
     class AdicionarEndereco {
 
         @Test
-        @DisplayName("Deve adicionar um endereco novo a uma pessoa")
-        void deveAdicionarEnderecoNovoAUmaPessoa() {
+        @DisplayName("Deve adicionar um endereço secundário com sucesso")
+        void deveAdicionarEnderecoComSucesso() {
             Pessoa pessoaMock = pessoaMockComUmPrincipal();
             EnderecoRequestDTO dto = enderecoSecundario();
-            Endereco enderecoMock = Endereco.builder().isPrincipal(false).build();
+            Endereco enderecoMock = Endereco.builder().idEndereco(2L).isPrincipal(false).build();
 
-            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findByIdComEnderecos(1L)).thenReturn(Optional.of(pessoaMock));
             when(enderecoMapper.toEntity(dto)).thenReturn(enderecoMock);
+            when(enderecoMapper.toDTO(enderecoMock)).thenReturn(enderecoResponseMock(enderecoMock));
 
-            service.adicionarEndereco(1L, dto);
+            List<EnderecoResultadoDTO> resultados = service.adicionarEndereco(1L, List.of(dto));
 
+            assertThat(resultados).hasSize(1);
+            assertThat(resultados.get(0).salvo()).isTrue();
             verify(pessoaRepository).save(pessoaMock);
-            assertThat(pessoaMock.getEnderecos()).contains(enderecoMock);
         }
 
         @Test
-        @DisplayName("Não deve adicionar endereco se pessoa não encontrada")
-        void naoDeveAdicionarEnderecoSePessoaNaoEncontrada() {
-            EnderecoRequestDTO dto = enderecoSecundario();
+        @DisplayName("Não deve adicionar endereço principal se já existe um")
+        void naoDeveAdicionarEnderecoPrincipalSeJaExisteUm() {
+            Pessoa pessoaMock = pessoaMockComUmPrincipal();
+            EnderecoRequestDTO dto = enderecoPrincipal();
+            Endereco enderecoMock = Endereco.builder().idEndereco(2L).isPrincipal(true).build();
 
-            when(pessoaRepository.findById(1L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findByIdComEnderecos(1L)).thenReturn(Optional.of(pessoaMock));
+            when(enderecoMapper.toEntity(dto)).thenReturn(enderecoMock);
+            when(enderecoMapper.toDTO(any())).thenReturn(enderecoResponseMock(enderecoMock));
+
+            List<EnderecoResultadoDTO> resultados = service.adicionarEndereco(1L, List.of(dto));
+
+            assertThat(resultados).hasSize(1);
+            assertThat(resultados.get(0).salvo()).isFalse();
+            assertThat(resultados.get(0).motivo()).isEqualTo("Apenas um endereço pode ser principal");
+        }
+
+        @Test
+        @DisplayName("Não deve adicionar endereço se pessoa não encontrada")
+        void naoDeveAdicionarEnderecoSePessoaNaoEncontrada() {
+            when(pessoaRepository.findByIdComEnderecos(99L)).thenReturn(Optional.empty());
 
             assertThrows(EntityNotFoundException.class,
-                    () -> service.adicionarEndereco(1L, dto));
+                    () -> service.adicionarEndereco(99L, List.of(enderecoSecundario())));
             verify(pessoaRepository, never()).save(any());
         }
     }
