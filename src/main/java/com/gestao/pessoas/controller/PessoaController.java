@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,8 +27,12 @@ public class PessoaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void cadastrarPessoa(@RequestBody @Valid PessoaRequestDTO dto) {
-        service.cadastrarPessoa(dto);
+    public ResponseEntity<PessoaResponseDTO> cadastrarPessoa(@RequestBody @Valid PessoaRequestDTO dto) {
+        PessoaResponseDTO response = service.cadastrarPessoa(dto);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @PostMapping("/{idPessoa}/enderecos")

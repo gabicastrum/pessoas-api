@@ -30,7 +30,7 @@ public class PessoaService {
     private final EnderecoMapper enderecoMapper;
 
     @Transactional
-    public void cadastrarPessoa(PessoaRequestDTO dto) {
+    public PessoaResponseDTO cadastrarPessoa(PessoaRequestDTO dto) {
         if (pessoaRepository.existsByCpf(dto.cpf())) {
             throw new CpfExisteException();
         }
@@ -42,7 +42,9 @@ public class PessoaService {
                     endereco.setPessoa(pessoa));
             validarConsistenciaEnderecos(pessoa);
         }
-        pessoaRepository.save(pessoa);
+        Pessoa pessoaSalva = pessoaRepository.save(pessoa);
+
+        return pessoaMapper.toDTO(pessoaSalva);
     }
 
     @Transactional
