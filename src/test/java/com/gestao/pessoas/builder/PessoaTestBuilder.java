@@ -4,6 +4,7 @@ import com.gestao.pessoas.domain.Endereco;
 import com.gestao.pessoas.domain.Pessoa;
 import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
+import com.gestao.pessoas.dto.response.EnderecoResponseDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 
 import java.time.LocalDate;
@@ -79,6 +80,20 @@ public class PessoaTestBuilder {
                 pessoa.getDataNascimento(),
                 null,
                 List.of()
+        );
+    }
+
+    //EnderecoResponseDTO
+    public static EnderecoResponseDTO enderecoResponseMock(Endereco endereco) {
+        return new EnderecoResponseDTO(
+                endereco.getIdEndereco(),
+                endereco.getRua(),
+                endereco.getNumero(),
+                endereco.getBairro(),
+                endereco.getCidade(),
+                endereco.getEstado(),
+                endereco.getCep(),
+                endereco.getIsPrincipal()
         );
     }
 
