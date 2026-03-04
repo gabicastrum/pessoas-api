@@ -86,6 +86,11 @@ public class PessoaService {
         return pessoaMapper.toDTO(pessoaRepository.save(pessoa));
     }
 
+    public void deletarPessoa(Long id) {
+        buscarPessoaPorId(id);
+        pessoaRepository.deleteById(id);
+    }
+
 
     private Pessoa buscarPessoaPorId(Long id) {
         return pessoaRepository.findById(id)
