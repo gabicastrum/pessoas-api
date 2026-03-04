@@ -76,6 +76,8 @@ public class PessoaTestBuilder {
                 1L,
                 pessoa.getNome(),
                 pessoa.getCpf(),
+                pessoa.getDataNascimento(),
+                null,
                 List.of()
         );
     }
