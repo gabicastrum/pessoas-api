@@ -8,6 +8,7 @@ import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.service.PessoaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -25,7 +26,10 @@ public class PessoaController {
     private final PessoaService service;
 
     @PostMapping
-    public ResponseEntity<PessoaResponseDTO> cadastrarPessoa(@RequestBody @Valid PessoaRequestDTO dto) {
+    public ResponseEntity<PessoaResponseDTO> cadastrarPessoa(
+            @RequestBody
+            @Valid PessoaRequestDTO dto
+    ) {
         PessoaResponseDTO response = service.cadastrarPessoa(dto);
 
         return ResponseEntity
@@ -36,8 +40,10 @@ public class PessoaController {
     @PostMapping("/{idPessoa}/enderecos")
     public ResponseEntity<List<EnderecoResultadoDTO>> adicionarEnderecos(
             @PathVariable Long idPessoa,
-            @RequestBody List<EnderecoRequestDTO> dtos) {
+            @RequestBody List<EnderecoRequestDTO> dtos
+    ) {
         List<EnderecoResultadoDTO> resultadoDTO = service.adicionarEndereco(idPessoa, dtos);
+
         return ResponseEntity
                 .status(HttpStatus.MULTI_STATUS)
                 .body(resultadoDTO);
@@ -45,8 +51,10 @@ public class PessoaController {
 
     @GetMapping
     public ResponseEntity<Page<PessoaResponseDTO>> listarPessoas(
-            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
-
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "nome")
+            Pageable pageable
+    ) {
         Page<PessoaResponseDTO> response = service.listarPessoas(pageable);
 
         return ResponseEntity.ok(response);
@@ -57,6 +65,7 @@ public class PessoaController {
             @PathVariable Long id
     ) {
         PessoaResponseDTO response = service.buscarPessoa(id);
+
         return ResponseEntity
                 .ok(response);
     }
@@ -67,13 +76,15 @@ public class PessoaController {
             @RequestBody @Valid PessoaUpdateRequestDTO dto
     ) {
         PessoaResponseDTO response = service.atualizarDados(id, dto);
+
         return ResponseEntity
                 .ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarPessoa(@PathVariable Long id) {
-
+    public ResponseEntity<Void> deletarPessoa(
+            @PathVariable Long id
+    ) {
         service.deletarPessoa(id);
 
         return ResponseEntity.noContent().build();
