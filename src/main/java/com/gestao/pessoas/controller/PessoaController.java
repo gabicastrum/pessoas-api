@@ -9,9 +9,8 @@ import com.gestao.pessoas.service.PessoaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +25,6 @@ public class PessoaController {
     private final PessoaService service;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<PessoaResponseDTO> cadastrarPessoa(@RequestBody @Valid PessoaRequestDTO dto) {
         PessoaResponseDTO response = service.cadastrarPessoa(dto);
 
@@ -36,44 +34,48 @@ public class PessoaController {
     }
 
     @PostMapping("/{idPessoa}/enderecos")
-    @ResponseStatus(HttpStatus.MULTI_STATUS)
-    public List<EnderecoResultadoDTO> adicionarEnderecos(
+    public ResponseEntity<List<EnderecoResultadoDTO>> adicionarEnderecos(
             @PathVariable Long idPessoa,
             @RequestBody List<EnderecoRequestDTO> dtos) {
-        return service.adicionarEndereco(idPessoa, dtos);
+        List<EnderecoResultadoDTO> resultadoDTO = service.adicionarEndereco(idPessoa, dtos);
+        return ResponseEntity
+                .status(HttpStatus.MULTI_STATUS)
+                .body(resultadoDTO);
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public Page<PessoaResponseDTO> listarPessoas(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "nome") String sort
-    ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        return service.listarPessoas(pageable);
+    public ResponseEntity<Page<PessoaResponseDTO>> listarPessoas(
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
+
+        Page<PessoaResponseDTO> response = service.listarPessoas(pageable);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public PessoaResponseDTO buscarPessoa(
+    public ResponseEntity<PessoaResponseDTO> buscarPessoa(
             @PathVariable Long id
     ) {
-        return service.buscarPessoa(id);
+        PessoaResponseDTO response = service.buscarPessoa(id);
+        return ResponseEntity
+                .ok(response);
     }
 
     @PatchMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public PessoaResponseDTO atualizarPessoa(
+    public ResponseEntity<PessoaResponseDTO> atualizarPessoa(
             @PathVariable Long id,
             @RequestBody @Valid PessoaUpdateRequestDTO dto
     ) {
-        return service.atualizarDados(id, dto);
+        PessoaResponseDTO response = service.atualizarDados(id, dto);
+        return ResponseEntity
+                .ok(response);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletarPessoa(@PathVariable Long id) {
+    public ResponseEntity<Void> deletarPessoa(@PathVariable Long id) {
+
         service.deletarPessoa(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

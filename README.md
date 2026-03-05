@@ -118,7 +118,7 @@ mvn javadoc:javadoc
 Após a geração, acesse o arquivo:
 
 ```
-target/site/apidocs/index.html
+target/reports/apidocs/index.html
 ```
 
 Abra esse arquivo no browser para visualizar a documentação das classes.
