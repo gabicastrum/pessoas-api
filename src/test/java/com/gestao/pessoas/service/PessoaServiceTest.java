@@ -7,6 +7,7 @@ import com.gestao.pessoas.dto.request.EnderecoUpdateRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaUpdateRequestDTO;
 import com.gestao.pessoas.dto.response.EnderecoResultadoDTO;
+import com.gestao.pessoas.dto.response.PageResponseDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.EnderecoMapper;
@@ -139,9 +140,9 @@ public class PessoaServiceTest {
             when(pessoaRepository.findAll(pageable)).thenReturn(paginaMock);
             when(pessoaMapper.toDTO(pessoaMock)).thenReturn(responseMock);
 
-            Page<PessoaResponseDTO> resultado = service.listarPessoas(pageable);
+            PageResponseDTO<PessoaResponseDTO> resultado = service.listarPessoas(pageable);
 
-            assertThat(resultado.getContent())
+            assertThat(resultado.content())
                     .hasSize(1)
                     .first()
                     .extracting(PessoaResponseDTO::nome)

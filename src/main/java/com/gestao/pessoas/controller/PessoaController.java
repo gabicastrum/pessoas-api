@@ -4,6 +4,7 @@ import com.gestao.pessoas.dto.request.EnderecoRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaUpdateRequestDTO;
 import com.gestao.pessoas.dto.response.EnderecoResultadoDTO;
+import com.gestao.pessoas.dto.response.PageResponseDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.service.PessoaService;
 import jakarta.validation.Valid;
@@ -50,12 +51,12 @@ public class PessoaController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<PessoaResponseDTO>> listarPessoas(
+    public ResponseEntity<PageResponseDTO<PessoaResponseDTO>> listarPessoas(
             @ParameterObject
             @PageableDefault(size = 10, sort = "nome")
             Pageable pageable
     ) {
-        Page<PessoaResponseDTO> response = service.listarPessoas(pageable);
+        PageResponseDTO<PessoaResponseDTO> response = service.listarPessoas(pageable);
 
         return ResponseEntity.ok(response);
     }

@@ -7,6 +7,7 @@ import com.gestao.pessoas.dto.request.EnderecoUpdateRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaRequestDTO;
 import com.gestao.pessoas.dto.request.PessoaUpdateRequestDTO;
 import com.gestao.pessoas.dto.response.EnderecoResultadoDTO;
+import com.gestao.pessoas.dto.response.PageResponseDTO;
 import com.gestao.pessoas.dto.response.PessoaResponseDTO;
 import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.EnderecoMapper;
@@ -91,9 +92,21 @@ public class PessoaService {
      * @param pageable Parâmetros de paginação
      * @return Página de pessoas
      */
-    public Page<PessoaResponseDTO> listarPessoas(Pageable pageable) {
-        return pessoaRepository.findAll(pageable)
-                .map(pessoaMapper::toDTO);
+    public PageResponseDTO<PessoaResponseDTO> listarPessoas(Pageable pageable) {
+        Page<Pessoa> page = pessoaRepository.findAll(pageable);
+
+        List<PessoaResponseDTO> pessoas = page.getContent()
+                .stream()
+                .map(pessoaMapper::toDTO)
+                .toList();
+
+        return new PageResponseDTO<>(
+                pessoas,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 
     /**
