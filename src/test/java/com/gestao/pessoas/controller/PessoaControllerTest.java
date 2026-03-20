@@ -28,6 +28,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class PessoaControllerTest {
 
+    private static final String URL_PESSOAS = "/pessoas";
+    private static final String RUA_PADRAO = "Rua das Flores";
+    private static final String NUMERO_PADRAO = "123";
+    private static final String BAIRRO_PADRAO = "Praia de Belas";
+    private static final String CIDADE_PADRAO = "Porto Alegre";
+    private static final String ESTADO_PADRAO = "RS";
+    private static final String CEP_PADRAO = "99999-999";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -37,50 +45,32 @@ class PessoaControllerTest {
     @Test
     void cadastrarPessoa() throws Exception {
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
-                "Rua das Flores",
-                "123",
-                "Praia de Belas",
-                "Porto Alegre",
-                "RS",
-                "99999-999",
-                true
+                RUA_PADRAO, NUMERO_PADRAO, BAIRRO_PADRAO, CIDADE_PADRAO, ESTADO_PADRAO, CEP_PADRAO, true
         );
 
         PessoaRequestDTO request = new PessoaRequestDTO(
-                "Gabriela",
-                LocalDate.of(1999, 9, 9),
-                "12345678909",
-                List.of(endereco)
+                "Gabriela", LocalDate.of(1999, 9, 9), "877.839.668-96", List.of(endereco)
         );
 
-        mockMvc.perform(post("/pessoas")
+        mockMvc.perform(post(URL_PESSOAS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nome").value("Gabriela"))
-                .andExpect(jsonPath("$.enderecos[0].cidade").value("Porto Alegre"));
+                .andExpect(jsonPath("$.enderecos[0].cidade").value(CIDADE_PADRAO));
     }
 
     @Test
     void adicionarEnderecos() throws Exception {
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
-                "Rua das Flores",
-                "123",
-                "Praia de Belas",
-                "Porto Alegre",
-                "RS",
-                "99999-999",
-                true
+                RUA_PADRAO, NUMERO_PADRAO, BAIRRO_PADRAO, CIDADE_PADRAO, ESTADO_PADRAO, CEP_PADRAO, true
         );
 
         PessoaRequestDTO request = new PessoaRequestDTO(
-                "Gabriela",
-                LocalDate.of(1999, 9, 9),
-                "98765432100",
-                List.of(endereco)
+                "Gabriela", LocalDate.of(1999, 9, 9), "877.839.668-96", List.of(endereco)
         );
 
-        String response = mockMvc.perform(post("/pessoas")
+        String response = mockMvc.perform(post(URL_PESSOAS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -88,9 +78,9 @@ class PessoaControllerTest {
         Long idPessoa = objectMapper.readTree(response).get("id").asLong();
 
         EnderecoRequestDTO novoEndereco = new EnderecoRequestDTO(
-                "Av. Ipiranga", "456", "Centro", "Porto Alegre", "RS", "88888-888", false
+                "Av. Ipiranga", "456", "Centro", CIDADE_PADRAO, ESTADO_PADRAO, "88888-888", false
         );
-        mockMvc.perform(post("/pessoas/" + idPessoa + "/enderecos")
+        mockMvc.perform(post(URL_PESSOAS + "/" + idPessoa + "/enderecos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(List.of(novoEndereco))))
                 .andExpect(status().isMultiStatus())
@@ -100,22 +90,17 @@ class PessoaControllerTest {
     @Test
     void listarPessoas() throws Exception {
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
-                "Rua das Flores",
-                "123",
-                "Praia de Belas",
-                "Porto Alegre",
-                "RS",
-                "99999-999",
-                true
+                RUA_PADRAO, NUMERO_PADRAO, BAIRRO_PADRAO, CIDADE_PADRAO, ESTADO_PADRAO, CEP_PADRAO, true
         );
-        mockMvc.perform(post("/pessoas")
+
+        mockMvc.perform(post(URL_PESSOAS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new PessoaRequestDTO("Edu", LocalDate.of(1980, 1, 1), "11144477735", List.of(endereco))
+                                new PessoaRequestDTO("Edu", LocalDate.of(1980, 1, 1), "749.410.088-12", List.of(endereco))
                         )))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/pessoas")
+        mockMvc.perform(get(URL_PESSOAS)
                         .param("page", "0")
                         .param("size", "10")
                         .param("sort", "nome"))
@@ -126,25 +111,19 @@ class PessoaControllerTest {
     @Test
     void buscarPessoa() throws Exception {
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
-                "Rua das Flores",
-                "123",
-                "Praia de Belas",
-                "Porto Alegre",
-                "RS",
-                "99999-999",
-                true
+                RUA_PADRAO, NUMERO_PADRAO, BAIRRO_PADRAO, CIDADE_PADRAO, ESTADO_PADRAO, CEP_PADRAO, true
         );
         PessoaRequestDTO request = new PessoaRequestDTO(
-                "Maria", LocalDate.of(1990, 5, 5), "22233344405", List.of(endereco)
+                "Maria", LocalDate.of(1990, 5, 5), "078.723.528-85", List.of(endereco)
         );
-        String response = mockMvc.perform(post("/pessoas")
+        String response = mockMvc.perform(post(URL_PESSOAS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         long idPessoa = objectMapper.readTree(response).get("id").asLong();
 
-        mockMvc.perform(get("/pessoas/" + idPessoa))
+        mockMvc.perform(get(URL_PESSOAS + "/" + idPessoa))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Maria"));
     }
@@ -152,18 +131,12 @@ class PessoaControllerTest {
     @Test
     void atualizarPessoa() throws Exception {
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
-                "Rua das Flores",
-                "123",
-                "Praia de Belas",
-                "Porto Alegre",
-                "RS",
-                "99999-999",
-                true
+                RUA_PADRAO, NUMERO_PADRAO, BAIRRO_PADRAO, CIDADE_PADRAO, ESTADO_PADRAO, CEP_PADRAO, true
         );
         PessoaRequestDTO request = new PessoaRequestDTO(
-                "Carlos", LocalDate.of(1985, 3, 3), "33322211196", List.of(endereco)
+                "Carlos", LocalDate.of(1985, 3, 3), "472.873.708-08", List.of(endereco)
         );
-        String response = mockMvc.perform(post("/pessoas")
+        String response = mockMvc.perform(post(URL_PESSOAS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -171,7 +144,7 @@ class PessoaControllerTest {
         long idPessoa = objectMapper.readTree(response).get("id").asLong();
 
         PessoaUpdateRequestDTO update = new PessoaUpdateRequestDTO("Carlos Laurindo", null, null);
-        mockMvc.perform(patch("/pessoas/" + idPessoa)
+        mockMvc.perform(patch(URL_PESSOAS + "/" + idPessoa)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isOk())
@@ -181,26 +154,19 @@ class PessoaControllerTest {
     @Test
     void deletarPessoa() throws Exception {
         EnderecoRequestDTO endereco = new EnderecoRequestDTO(
-                "Rua das Flores",
-                "123",
-                "Praia de Belas",
-                "Porto Alegre",
-                "RS",
-                "99999-999",
-                true
+                RUA_PADRAO, NUMERO_PADRAO, BAIRRO_PADRAO, CIDADE_PADRAO, ESTADO_PADRAO, CEP_PADRAO, true
         );
         PessoaRequestDTO request = new PessoaRequestDTO(
-                "Pedro", LocalDate.of(1970, 7, 7), "55566677788", List.of(endereco)
+                "Pedro", LocalDate.of(1970, 7, 7), "099.199.988-69", List.of(endereco)
         );
-        String response = mockMvc.perform(post("/pessoas")
+        String response = mockMvc.perform(post(URL_PESSOAS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         long idPessoa = objectMapper.readTree(response).get("id").asLong();
 
-        mockMvc.perform(delete("/pessoas/" + idPessoa))
+        mockMvc.perform(delete(URL_PESSOAS + "/" + idPessoa))
                 .andExpect(status().isNoContent());
     }
-
 }

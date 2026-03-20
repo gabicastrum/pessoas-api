@@ -38,6 +38,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PessoaServiceTest {
 
+    private static final Long ID_PESSOA = 1L;
+    private static final Long ID_PESSOA_INEXISTENTE = 99L;
+    private static final Long ID_ENDERECO_INEXISTENTE = 999L;
+    private static final String NOME_ATUALIZADO = "Gabriela Atualizada";
+    private static final String RUA_ATUALIZADA = "Rua Nova";
+    private static final String MSG_APENAS_UM_PRINCIPAL = "Apenas um endereço pode ser principal";
+
     @InjectMocks
     PessoaService service;
 
@@ -164,11 +171,11 @@ public class PessoaServiceTest {
             EnderecoRequestDTO dto = enderecoSecundario();
             Endereco enderecoMock = Endereco.builder().idEndereco(2L).isPrincipal(false).build();
 
-            when(pessoaRepository.findByIdComEnderecos(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findByIdComEnderecos(ID_PESSOA)).thenReturn(Optional.of(pessoaMock));
             when(enderecoMapper.toEntity(dto)).thenReturn(enderecoMock);
             when(enderecoMapper.toDTO(enderecoMock)).thenReturn(enderecoResponseMock(enderecoMock));
 
-            List<EnderecoResultadoDTO> resultados = service.adicionarEndereco(1L, List.of(dto));
+            List<EnderecoResultadoDTO> resultados = service.adicionarEndereco(ID_PESSOA, List.of(dto));
 
             assertThat(resultados).hasSize(1);
             assertThat(resultados.get(0).salvo()).isTrue();
@@ -182,24 +189,24 @@ public class PessoaServiceTest {
             EnderecoRequestDTO dto = enderecoPrincipal();
             Endereco enderecoMock = Endereco.builder().idEndereco(2L).isPrincipal(true).build();
 
-            when(pessoaRepository.findByIdComEnderecos(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findByIdComEnderecos(ID_PESSOA)).thenReturn(Optional.of(pessoaMock));
             when(enderecoMapper.toEntity(dto)).thenReturn(enderecoMock);
             when(enderecoMapper.toDTO(any())).thenReturn(enderecoResponseMock(enderecoMock));
 
-            List<EnderecoResultadoDTO> resultados = service.adicionarEndereco(1L, List.of(dto));
+            List<EnderecoResultadoDTO> resultados = service.adicionarEndereco(ID_PESSOA, List.of(dto));
 
             assertThat(resultados).hasSize(1);
             assertThat(resultados.get(0).salvo()).isFalse();
-            assertThat(resultados.get(0).motivo()).isEqualTo("Apenas um endereço pode ser principal");
+            assertThat(resultados.get(0).motivo()).isEqualTo(MSG_APENAS_UM_PRINCIPAL);
         }
 
         @Test
         @DisplayName("Não deve adicionar endereço se pessoa não encontrada")
         void naoDeveAdicionarEnderecoSePessoaNaoEncontrada() {
-            when(pessoaRepository.findByIdComEnderecos(99L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findByIdComEnderecos(ID_PESSOA_INEXISTENTE)).thenReturn(Optional.empty());
 
             assertThrows(EntityNotFoundException.class,
-                    () -> service.adicionarEndereco(99L, List.of(enderecoSecundario())));
+                    () -> service.adicionarEndereco(ID_PESSOA_INEXISTENTE, List.of(enderecoSecundario())));
             verify(pessoaRepository, never()).save(any());
         }
     }
@@ -214,23 +221,23 @@ public class PessoaServiceTest {
             Pessoa pessoaMock = pessoaMockComUmPrincipal();
             PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
 
-            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findById(ID_PESSOA)).thenReturn(Optional.of(pessoaMock));
             when(pessoaMapper.toDTO(pessoaMock)).thenReturn(responseMock);
 
-            PessoaResponseDTO resultado = service.buscarPessoa(1L);
+            PessoaResponseDTO resultado = service.buscarPessoa(ID_PESSOA);
 
             assertThat(resultado.nome()).isEqualTo(pessoaMock.getNome());
-            verify(pessoaRepository).findById(1L);
+            verify(pessoaRepository).findById(ID_PESSOA);
             verify(pessoaMapper).toDTO(pessoaMock);
         }
 
         @Test
         @DisplayName("Não deve buscar pessoa se não encontrada")
         void naoDeveBuscarPessoaNaoEncontrada() {
-            when(pessoaRepository.findById(99L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findById(ID_PESSOA_INEXISTENTE)).thenReturn(Optional.empty());
 
             assertThrows(EntityNotFoundException.class,
-                    () -> service.buscarPessoa(99L));
+                    () -> service.buscarPessoa(ID_PESSOA_INEXISTENTE));
             verify(pessoaMapper, never()).toDTO(any());
         }
     }
@@ -243,29 +250,29 @@ public class PessoaServiceTest {
         @DisplayName("Deve atualizar dados da pessoa com sucesso")
         void deveAtualizarDadosPessoaComSucesso() {
             Pessoa pessoaMock = pessoaMockComUmPrincipal();
-            PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO("Gabriela Atualizada", null, null);
+            PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO(NOME_ATUALIZADO, null, null);
             PessoaResponseDTO responseMock = pessoaResponseMock(pessoaMock);
 
-            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findById(ID_PESSOA)).thenReturn(Optional.of(pessoaMock));
             when(pessoaRepository.save(pessoaMock)).thenReturn(pessoaMock);
             when(pessoaMapper.toDTO(pessoaMock)).thenReturn(responseMock);
 
-            PessoaResponseDTO resultado = service.atualizarDados(1L, updateDTO);
+            PessoaResponseDTO resultado = service.atualizarDados(ID_PESSOA, updateDTO);
 
             assertThat(resultado).isNotNull();
-            assertThat(pessoaMock.getNome()).isEqualTo("Gabriela Atualizada");
+            assertThat(pessoaMock.getNome()).isEqualTo(NOME_ATUALIZADO);
             verify(pessoaRepository).save(pessoaMock);
         }
 
         @Test
         @DisplayName("Não deve atualizar se pessoa não encontrada")
         void naoDeveAtualizarSePessoaNaoEncontrada() {
-            PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO("Gabriela Atualizada", null, null);
+            PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO(NOME_ATUALIZADO, null, null);
 
-            when(pessoaRepository.findById(99L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findById(ID_PESSOA_INEXISTENTE)).thenReturn(Optional.empty());
 
             assertThrows(EntityNotFoundException.class,
-                    () -> service.atualizarDados(99L, updateDTO));
+                    () -> service.atualizarDados(ID_PESSOA_INEXISTENTE, updateDTO));
             verify(pessoaRepository, never()).save(any());
         }
 
@@ -273,13 +280,13 @@ public class PessoaServiceTest {
         @DisplayName("Não deve atualizar se endereço não encontrado")
         void naoDeveAtualizarSeEnderecoNaoEncontrado() {
             Pessoa pessoaMock = pessoaMockComUmPrincipal();
-            EnderecoUpdateRequestDTO enderecoDTO = new EnderecoUpdateRequestDTO(999L, "Rua Nova", null, null, null, null, null, null);
+            EnderecoUpdateRequestDTO enderecoDTO = new EnderecoUpdateRequestDTO(ID_ENDERECO_INEXISTENTE, RUA_ATUALIZADA, null, null, null, null, null, null);
             PessoaUpdateRequestDTO updateDTO = new PessoaUpdateRequestDTO(null, null, List.of(enderecoDTO));
 
-            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findById(ID_PESSOA)).thenReturn(Optional.of(pessoaMock));
 
             assertThrows(EntityNotFoundException.class,
-                    () -> service.atualizarDados(1L, updateDTO));
+                    () -> service.atualizarDados(ID_PESSOA, updateDTO));
             verify(pessoaRepository, never()).save(any());
         }
     }
@@ -289,23 +296,23 @@ public class PessoaServiceTest {
     class DeletarPessoa {
 
         @Test
-        @DisplayName(" Deve deletar os dados da pessoa com sucesso")
+        @DisplayName("Deve deletar os dados da pessoa com sucesso")
         void deveDeletarPessoaComSucesso() {
             Pessoa pessoaMock = pessoaMockComUmPrincipal();
 
-            when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoaMock));
+            when(pessoaRepository.findById(ID_PESSOA)).thenReturn(Optional.of(pessoaMock));
 
-            service.deletarPessoa(1L);
+            service.deletarPessoa(ID_PESSOA);
 
-            verify(pessoaRepository).deleteById(1L);
+            verify(pessoaRepository).deleteById(ID_PESSOA);
         }
 
         @Test
         @DisplayName("Não deve deletar se os dados não forem encontrados")
         void naoDeveDeletarSeOsDadosNaoForemEncontrados() {
-            when(pessoaRepository.findById(99L)).thenReturn(Optional.empty());
+            when(pessoaRepository.findById(ID_PESSOA_INEXISTENTE)).thenReturn(Optional.empty());
 
-            assertThrows(EntityNotFoundException.class, () -> service.deletarPessoa(99L));
+            assertThrows(EntityNotFoundException.class, () -> service.deletarPessoa(ID_PESSOA_INEXISTENTE));
 
             verify(pessoaRepository, never()).deleteById(any());
         }

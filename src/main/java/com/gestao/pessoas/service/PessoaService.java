@@ -13,6 +13,7 @@ import com.gestao.pessoas.exception.CpfExisteException;
 import com.gestao.pessoas.mapper.EnderecoMapper;
 import com.gestao.pessoas.mapper.PessoaMapper;
 import com.gestao.pessoas.repository.PessoaRepository;
+import com.gestao.pessoas.validation.CpfValidation;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class PessoaService {
      */
     @Transactional
     public PessoaResponseDTO cadastrarPessoa(PessoaRequestDTO dto) {
+        CpfValidation.validar(dto.cpf());
         if (pessoaRepository.existsByCpf(dto.cpf())) {
             throw new CpfExisteException();
         }
